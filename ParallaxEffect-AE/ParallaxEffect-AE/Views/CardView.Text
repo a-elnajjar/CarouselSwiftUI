@@ -1,0 +1,163 @@
+//
+//  CardView.swift
+//  ParallaxEffect-AE
+//
+//  Created by Abdalla El Najjar on 2023-09-15.
+//
+
+The code can be further improved by enhancing its readability and reducing redundancy. Here's an improved version of your code:
+
+```swift
+import SwiftUI
+
+struct CardView: View {
+    let card: TravelCard
+    
+    var body: some View {
+        GeometryReader { proxy in
+            let cardSize = proxy.size
+            let minX = min((proxy.frame(in: .scrollView).minX - 30.0) * 1.4, cardSize.width * 1.2)
+            
+            Image(card.image)
+                .resizable()
+                .aspectRatio(contentMode: .fill)
+                .scaleEffect(1.3)
+                .offset(x: -minX)
+                .frame(width: cardSize.width * 2.5)
+                .frame(width: cardSize.width, height: cardSize.height)
+                .overlay(OverlayView(card))
+                .clipShape(RoundedRectangle(cornerRadius: 30))
+                .shadow(color: .black.opacity(0.25), radius: 8, x: 5, y: 10)
+        }
+    }
+}
+
+struct SliderView: View {
+    let cards: [TravelCard]
+    let height: CGFloat
+    
+    var body: some View {
+        GeometryReader { geometry in
+            ScrollView(.horizontal, showsIndicators: false) {
+                LazyHStack(spacing: 5) {
+                    ForEach(cards) { card in
+                        CardView(card: card)
+                            .frame(width: geometry.size.width - 60, height: height - 50)
+                            .scrollTransition(.interactive, axis: .horizontal) { view, phase in
+                                view.scaleEffect(phase.isIdentity ? 1 : 0.95)
+                            }
+                    }
+                }
+            }
+            .padding(.horizontal, 20)
+            .padding(.vertical, 5)
+            .scrollTargetLayout()
+            .frame(height: height, alignment: .top)
+        }
+        .frame(height: height)
+    }
+    
+    @ViewBuilder
+    func OverlayView(_ card: TravelCard) -> some View {
+        ZStack(alignment: .center) {
+            Color(red: 0.10, green: 0.10, blue: 0.10)
+                .opacity(0.6)
+            
+            VStack(spacing: 4) {
+                Text(card.title)
+                    .font(.title)
+                    .fontWeight(.black)
+                    .foregroundStyle(.white)
+                
+                Text(card.subTitle)
+                    .font(.callout)
+                    .foregroundStyle(.white)
+            }
+            .padding(20)
+        }
+    }
+}
+```
+
+In this improved version:
+
+1. The code for the `CardView` and `SliderView` has been organized into separate reusable components.
+
+2. The `SliderView` now accepts an array of `TravelCard` objects and a `height` parameter, making it more flexible.
+
+3. The `LazyHStack` is used instead of `HStack` to improve performance and reduce memory usage, especially when dealing with a large number of cards.
+
+4. Redundant `frame` modifiers have been removed, and the code structure has been simplified for readability.
+
+By refactoring and organizing your code in this way, it becomes more modular and easier to maintain while retaining flexibility and performance. You can use the `SliderView` component in different parts of your app with varying sets of cards and heights as needed.
+
+                    You can use the refactored `SliderView` and `CardView` components in your SwiftUI views by passing in the appropriate data. Here's an example of how to use them:
+
+                    First, make sure you have your `TravelCard` model defined:
+
+                    ```swift
+                    struct TravelCard: Identifiable {
+                        let id = UUID()
+                        let image: String
+                        let title: String
+                        let subTitle: String
+                    }
+                    ```
+
+                    Now, you can use the `SliderView` in your SwiftUI views as follows:
+
+                    1. Import SwiftUI.
+
+                    2. Create an array of `TravelCard` objects.
+
+                    3. Use the `SliderView` with the array of cards and specify the desired height.
+
+                    Here's an example for the main slider:
+
+                    ```swift
+                    import SwiftUI
+
+                    struct ContentView: View {
+                        let travelCards: [TravelCard] = [
+                            TravelCard(image: "Pic1", title: "Santorini", subTitle: "Greece"),
+                            TravelCard(image: "Pic2", title: "Maldives", subTitle: "Archipelagic"),
+                            TravelCard(image: "Pic3", title: "Cappadocia", subTitle: "Turkey"),
+                        ]
+
+                        var body: some View {
+                            SliderView(cards: travelCards, height: 500)
+                        }
+                    }
+
+                    struct ContentView_Previews: PreviewProvider {
+                        static var previews: some View {
+                            ContentView()
+                        }
+                    }
+                    ```
+
+                    And here's an example for the mini slider:
+
+                    ```swift
+                    import SwiftUI
+
+                    struct MiniSliderView: View {
+                        let miniTravelCards: [TravelCard] = [
+                            TravelCard(image: "MiniPic1", title: "Mini Santorini", subTitle: "Mini Greece"),
+                            TravelCard(image: "MiniPic2", title: "Mini Maldives", subTitle: "Mini Archipelagic"),
+                            TravelCard(image: "MiniPic3", title: "Mini Cappadocia", subTitle: "Mini Turkey"),
+                        ]
+
+                        var body: some View {
+                            SliderView(cards: miniTravelCards, height: 200)
+                        }
+                    }
+
+                    struct MiniSliderView_Previews: PreviewProvider {
+                        static var previews: some View {
+                            MiniSliderView()
+                        }
+                    }
+                    ```
+
+                    In these examples, we create arrays of `TravelCard` objects and pass them to the `SliderView` component along with the desired height. You can customize the card data and appearance as needed for both the main slider and the mini slider.
